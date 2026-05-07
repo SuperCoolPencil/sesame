@@ -4,6 +4,41 @@ import urllib.parse
 import ssl
 import sys
 import time
+import json
+import os
+
+PROFILES_FILE = os.path.join(os.path.dirname(__file__), "profiles.json")
+
+def load_profiles():
+    if not os.path.exists(PROFILES_FILE):
+        return []
+    try:
+        with open(PROFILES_FILE, 'r') as f:
+            return json.load(f)
+    except:
+        return []
+
+def save_profiles(profiles):
+    with open(PROFILES_FILE, 'w') as f:
+        json.dump(profiles, f, indent=4)
+
+def add_profile(name, username, password):
+    profiles = load_profiles()
+    # Replace existing profile with same name if it exists
+    profiles = [p for p in profiles if p.get('name') != name]
+    profiles.append({'name': name, 'username': username, 'password': password})
+    save_profiles(profiles)
+    print(f"saved profile: {name}")
+
+def list_profiles():
+    profiles = load_profiles()
+    if not profiles:
+        print("no profiles saved. use 'add <name> <user> <pass>' to save one.")
+        return
+    print("saved profiles:")
+    for i, p in enumerate(profiles, 1):
+        name = p.get('name', f"profile {i}")
+        print(f"{i}: {name} ({p['username']})")
 
 def login(username, password):
     # Standard endpoint for Sophos/Cyberoam captive portal clients
@@ -53,12 +88,60 @@ def login(username, password):
         print(f"Unexpected error occurred: {e}")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print(f"Usage: {sys.argv[0]} <username> <password>")
-        sys.exit(1)
-        
-    username = sys.argv[1]
-    password = sys.argv[2]
+    args = sys.argv[1:]
     
-    print(f"Attempting to authenticate user '{username}'...")
-    login(username, password)
+    if len(args) == 0:
+        print(f"usage:")
+        print(f"  {sys.argv[0]} <username> <password>       (direct login)")
+        print(f"  {sys.argv[0]} <name_or_number>            (use saved profile)")
+        print(f"  {sys.argv[0]} add <name> <user> <pass>    (save profile)")
+        print(f"  {sys.argv[0]} list                        (list profiles)")
+        sys.exit(0)
+
+    if args[0] == "list":
+        list_profiles()
+        sys.exit(0)
+
+    if args[0] == "add":
+        if len(args) != 4:
+            print("usage: add <name> <username> <password>")
+            sys.exit(1)
+        add_profile(args[1], args[2], args[3])
+        sys.exit(0)
+
+    # Check if arg is a profile number or name
+    profiles = load_profiles()
+    target = args[0]
+    
+    selected_profile = None
+    
+    if target.isdigit():
+        idx = int(target) - 1
+        if 0 <= idx < len(profiles):
+            selected_profile = profiles[idx]
+    else:
+        for p in profiles:
+            if p.get('name') == target:
+                selected_profile = p
+                break
+
+    if selected_profile:
+        user = selected_profile['username']
+        pw = selected_profile['password']
+        name = selected_profile.get('name', "unknown")
+        print(f"using profile: {name} ({user})")
+        login(user, pw)
+        sys.exit(0)
+
+    # Default to direct login if 2 args provided
+    if len(args) == 2:
+        username = args[0]
+        password = args[1]
+        print(f"attempting to authenticate user '{username}'...")
+        login(username, password)
+    elif not target.isdigit() or len(profiles) > 0:
+        print(f"profile '{target}' not found. use 'list' to see available profiles.")
+        sys.exit(1)
+    else:
+        print("invalid arguments. run without args for usage.")
+        sys.exit(1)

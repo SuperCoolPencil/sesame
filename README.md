@@ -4,22 +4,38 @@ a lightweight python script to automate the authentication process for the iiitg
 
 ## usage
 
-you can run the script directly using python:
+you can run the script directly with username and password:
 
 ```bash
 python main.py <username> <password>
 ```
 
-alternatively, you can make the script executable and run it like a standard command:
+### profiles
+
+save your credentials with a name to login faster:
 
 ```bash
-chmod +x main.py
-./main.py <username> <password>
+python main.py add <name> <username> <password>
+```
+
+then just use the name or number to login:
+
+```bash
+python main.py meet
+# or
+python main.py 1
+```
+
+list all saved profiles:
+
+```bash
+python main.py list
 ```
 
 ## features
 
 - automates login to the iiitg captive portal endpoint (`https://secure.iiitg.ac.in:8090/`).
-- seamlessly handles the portal's xml responses to provide accurate connection status.
-- built with standard python libraries (no `pip install` required).
+- handles named profiles for quick access.
+- seamlessly handles the portal's xml responses.
+- built with standard python libraries.
 - minimalist terminal output.
