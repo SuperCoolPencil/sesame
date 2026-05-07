@@ -7,7 +7,14 @@ import time
 import json
 import os
 
-PROFILES_FILE = os.path.join(os.path.dirname(__file__), "profiles.json")
+import pathlib
+
+# Store profiles in the user's config directory so they aren't lost when updating the tool
+CONFIG_DIR = os.path.expanduser("~/.config/sesame")
+PROFILES_FILE = os.path.join(CONFIG_DIR, "profiles.json")
+
+def _ensure_config_dir():
+    os.makedirs(CONFIG_DIR, exist_ok=True)
 
 def load_profiles():
     if not os.path.exists(PROFILES_FILE):
@@ -19,6 +26,7 @@ def load_profiles():
         return []
 
 def save_profiles(profiles):
+    _ensure_config_dir()
     with open(PROFILES_FILE, 'w') as f:
         json.dump(profiles, f, indent=4)
     os.chmod(PROFILES_FILE, 0o600)
