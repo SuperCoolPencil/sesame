@@ -87,16 +87,33 @@ def login(username, password):
         print("make sure you are currently connected to the iiitg wi-fi network.")
     except Exception as e:
         print(f"unexpected error occurred: {e}")
+def init_sesame():
+    import subprocess
+    project_dir = os.path.dirname(os.path.abspath(__file__))
+    print("installing sesame using uv...")
+    try:
+        subprocess.check_call(["uv", "tool", "install", "--force", "."], cwd=project_dir)
+        print("successfully installed 'sesame'.")
+        print("you can now use the 'sesame' command from anywhere.")
+    except subprocess.CalledProcessError as e:
+        print(f"failed to install sesame: {e}")
+    except FileNotFoundError:
+        print("uv not found. please ensure uv is installed and in your PATH.")
 
-if __name__ == "__main__":
+def main():
     args = sys.argv[1:]
     
     if len(args) == 0:
         print(f"usage:")
-        print(f"  {sys.argv[0]} <username> <password>       (direct login)")
-        print(f"  {sys.argv[0]} <name_or_number>            (use saved profile)")
-        print(f"  {sys.argv[0]} add <name> <user> <pass>    (save profile)")
-        print(f"  {sys.argv[0]} list                        (list profiles)")
+        print(f"  sesame <username> <password>       (direct login)")
+        print(f"  sesame <name_or_number>            (use saved profile)")
+        print(f"  sesame add <name> <user> <pass>    (save profile)")
+        print(f"  sesame list                        (list profiles)")
+        print(f"  sesame init                        (install 'sesame' to PATH)")
+        sys.exit(0)
+
+    if args[0] == "init":
+        init_sesame()
         sys.exit(0)
 
     if args[0] == "list":
@@ -147,3 +164,6 @@ if __name__ == "__main__":
 
     print("invalid arguments. run without args for usage.")
     sys.exit(1)
+
+if __name__ == "__main__":
+    main()

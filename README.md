@@ -2,12 +2,22 @@
 
 a lightweight python script to automate the authentication process for the iiitg captive portal.
 
+## installation
+
+you can install `sesame` globally using `uv` to use it from anywhere in your terminal. just run the `init` command from the repository root:
+
+```bash
+uv run main.py init
+```
+
+once installed, you can use the `sesame` command instead of `python main.py`.
+
 ## usage
 
 you can run the script directly with username and password:
 
 ```bash
-python main.py <username> <password>
+sesame <username> <password>
 ```
 
 ### profiles
@@ -15,21 +25,21 @@ python main.py <username> <password>
 save your credentials with a name to login faster:
 
 ```bash
-python main.py add <name> <username> <password>
+sesame add <name> <username> <password>
 ```
 
 then just use the name or number to login:
 
 ```bash
-python main.py meet
+sesame meet
 # or
-python main.py 1
+sesame 1
 ```
 
 list all saved profiles:
 
 ```bash
-python main.py list
+sesame list
 ```
 
 ## features
@@ -39,3 +49,4 @@ python main.py list
 - seamlessly handles the portal's xml responses.
 - built with standard python libraries.
 - minimalist terminal output.
+- os-agnostic global installation via `uv`.
