@@ -33,8 +33,10 @@ def save_profiles(profiles):
 
 def add_profile(name, username, password):
     profiles = load_profiles()
-    # Replace existing profile with same name if it exists
-    profiles = [p for p in profiles if p.get('name') != name]
+    # Check if profile with same name already exists
+    if any(p.get('name') == name for p in profiles):
+        print(f"error: profile '{name}' already exists.")
+        sys.exit(1)
     profiles.append({'name': name, 'username': username, 'password': password})
     save_profiles(profiles)
     print(f"saved profile: {name}")
