@@ -110,6 +110,18 @@ def init_sesame():
     except FileNotFoundError:
         print("uv not found. please ensure uv is installed and in your PATH.")
 
+def open_config():
+    editor = os.environ.get('EDITOR', 'nano')
+    if not os.path.exists(PROFILES_FILE):
+        _ensure_config_dir()
+        with open(PROFILES_FILE, 'w') as f:
+            f.write("[]\n")
+    import subprocess
+    try:
+        subprocess.call([editor, PROFILES_FILE])
+    except Exception as e:
+        print(f"failed to open config: {e}")
+
 def main():
     args = sys.argv[1:]
     
@@ -119,6 +131,7 @@ def main():
         print(f"  sesame <name_or_number>            (use saved profile)")
         print(f"  sesame add <name> <user> <pass>    (save profile)")
         print(f"  sesame list                        (list profiles)")
+        print(f"  sesame config                      (open config file)")
         print(f"  sesame init                        (install 'sesame' to PATH)")
         sys.exit(0)
 
@@ -128,6 +141,10 @@ def main():
 
     if args[0] == "list":
         list_profiles()
+        sys.exit(0)
+
+    if args[0] == "config":
+        open_config()
         sys.exit(0)
 
     if args[0] == "add":
