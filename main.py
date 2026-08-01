@@ -111,6 +111,12 @@ def login(username, password):
 def init_sesame():
     import subprocess
     project_dir = os.path.dirname(os.path.abspath(__file__))
+    
+    if not os.path.exists(os.path.join(project_dir, "pyproject.toml")):
+        print("error: 'sesame init' must be run from the source code directory.")
+        print("it looks like sesame is already installed or running as a binary.")
+        return
+
     print("installing sesame using uv...")
     try:
         subprocess.check_call(["uv", "tool", "install", "--force", "."], cwd=project_dir)
