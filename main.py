@@ -10,7 +10,12 @@ import os
 import pathlib
 
 # Store profiles in the user's config directory so they aren't lost when updating the tool
-CONFIG_DIR = os.path.expanduser("~/.config/sesame")
+if sys.platform == "win32":
+    CONFIG_DIR = os.path.join(os.environ.get("APPDATA", os.path.expanduser("~")), "sesame")
+elif sys.platform == "darwin":
+    CONFIG_DIR = os.path.expanduser("~/Library/Application Support/sesame")
+else:
+    CONFIG_DIR = os.path.expanduser("~/.config/sesame")
 PROFILES_FILE = os.path.join(CONFIG_DIR, "profiles.json")
 
 def _ensure_config_dir():
@@ -111,12 +116,24 @@ def init_sesame():
         print("uv not found. please ensure uv is installed and in your PATH.")
 
 def open_config():
-    editor = os.environ.get('EDITOR', 'nano')
     if not os.path.exists(PROFILES_FILE):
         _ensure_config_dir()
         with open(PROFILES_FILE, 'w') as f:
             f.write("[]\n")
+            
+    if sys.platform == "win32":
+        os.startfile(PROFILES_FILE)
+        return
+
     import subprocess
+    if sys.platform == "darwin":
+        try:
+            subprocess.call(["open", PROFILES_FILE])
+        except Exception as e:
+            print(f"failed to open config: {e}")
+        return
+
+    editor = os.environ.get('EDITOR', 'nano')
     try:
         subprocess.call([editor, PROFILES_FILE])
     except Exception as e:
