@@ -88,20 +88,26 @@ def login(username, password):
             resp_lower = resp_body.lower()
             if 'login successful' in resp_lower or 'you are signed in as' in resp_lower or '<status><![cdata[live]]></status>' in resp_lower:
                 print("sesame opened. you should be connected to the internet.")
+                return True
             elif 'maximum login limit' in resp_lower:
                 print("maximum login limit reached for this user.")
+                return False
             elif 'could not be authenticated' in resp_lower or 'login failed' in resp_lower or '<status><![cdata[login]]></status>' in resp_lower:
                 print("authentication failed. check your username and password.")
+                return False
             else:
                 # If we get here, it might still have worked but the response format was unexpected
                 print("got a response, but couldn't verify if it succeeded. response:")
                 print(resp_body.strip())
+                return False
                 
     except urllib.error.URLError as e:
         print(f"network error: could not reach the captive portal ({e.reason}).")
         print("make sure you are currently connected to the iiitg wi-fi network.")
+        return False
     except Exception as e:
         print(f"unexpected error occurred: {e}")
+        return False
 def init_sesame():
     import subprocess
     project_dir = os.path.dirname(os.path.abspath(__file__))
@@ -143,9 +149,28 @@ def main():
     args = sys.argv[1:]
     
     if len(args) == 0:
+        profiles = load_profiles()
+        if not profiles:
+            print("no profiles saved. use 'sesame add <name> <user> <pass>' to save one.")
+            print("run 'sesame help' for usage.")
+            sys.exit(1)
+            
+        for p in profiles:
+            user = p['username']
+            pw = p['password']
+            name = p.get('name', "unknown")
+            print(f"attempting profile: {name} ({user})")
+            if login(user, pw):
+                sys.exit(0)
+        
+        print("all profiles failed to connect.")
+        sys.exit(1)
+
+    if args[0] in ("help", "--help", "-h"):
         print(f"usage:")
+        print(f"  sesame                             (auto-login using saved profiles)")
         print(f"  sesame <username> <password>       (direct login)")
-        print(f"  sesame <name_or_number>            (use saved profile)")
+        print(f"  sesame <name_or_number>            (use specific saved profile)")
         print(f"  sesame add <name> <user> <pass>    (save profile)")
         print(f"  sesame list                        (list profiles)")
         print(f"  sesame config                      (open config file)")
